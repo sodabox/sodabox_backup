@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>sodabox test page</title>
+<link rel="stylesheet" media="screen" type="text/css"
+	href="http://www.sodabox.io:8080/sodabox.css" />
+<script language="JavaScript">
+<!--
+	function SetCookie(cKey, cValue) // name,pwd
+	{
+		var date = new Date(); // 오늘 날짜
+		// 만료시점 : 오늘날짜+10 설정
+		var validity = 10;
+		date.setDate(date.getDate() + validity);
+		// 쿠키 저장
+		document.cookie = cKey + '=' + escape(cValue) + ';expires='
+				+ date.toGMTString();
+		alert(cKey + " 쿠키 생성 완료!!! ");
+	}
+	function DelCookie(cKey) {
+		// 동일한 키(name)값으로
+		// 1. 만료날짜 과거로 쿠키저장
+		// 2. 만료날짜 설정 않는다. 
+		//    브라우저가 닫힐 때 제명이 된다   
+		var date = new Date(); // 오늘 날짜 
+		var validity = -1;
+		date.setDate(date.getDate() + validity);
+		document.cookie = cKey + "=;expires=" + date.toGMTString();
+	}
+	function GetCookie(cKey) {
+		var allcookies = document.cookie;
+		alert(allcookies);
+		var cookies = allcookies.split("; ");
+		for ( var i = 0; i < cookies.length; i++) {
+			var keyValues = cookies[i].split("=");
+			if (keyValues[0] == cKey) {
+				return unescape(keyValues[1]);
+			}
+		}
+		return "";
+	}
+//-->
+</script>
+</head>
+<body>
+	<br> TEST
+	<br>
+
+	<script type="text/javascript"
+		src="http://www.sodabox.io:8080/sodabox.js" charset="utf-8"></script>
+
+	<script language="javascript">
+		SODABOX.init();
+	</script>
+
+</body>
+</html>

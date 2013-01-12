@@ -1,0 +1,24 @@
+#!/bin/bash
+
+CUR_DIR="`pwd -P`"
+
+echo " >> mod-nodeManager"
+cd ./mod-nodeManager
+./mk clean sodabox
+
+echo " >> mod-subRedis"
+cd ../mod-subRedis
+./mk clean sodabox
+
+echo " >> mod-sockServer"
+cd ../mod-sockServer
+./mk clean sodabox
+
+echo " >> mod-webServer"
+cd ../mod-webServer
+./mk clean sodabox
+
+cd $CUR_DIR
+
+
+echo "done."

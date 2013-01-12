@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec redis-server ./conf/redis"$1".conf
