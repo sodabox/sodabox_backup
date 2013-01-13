@@ -482,7 +482,7 @@ var SODABOX = (function(CONF, UTILS, WIN) {
         WIN.initWin(CONF.divName, CONF.httpUrl);
         
         CONF.user = SODABOX_utils.getUserInfo();
-        if ( typeof CONF.user.id == "undefined") {
+        if ( typeof CONF.user.name == "undefined") {
         	CONF.isLogined = false;
         }else{
         	CONF.isLogined = true;
@@ -519,12 +519,15 @@ var SODABOX = (function(CONF, UTILS, WIN) {
             var resJson = JSON.parse(e.data);
             if(resJson.action == "JOIN"){
             	CONF.socketId = resJson.socketId;
+            	CONF.currentUserCnt = resJson.count;
             	
             }else if(resJson.action == "IN"){
-            	CONF.socketId = resJson.socketId;
             	CONF.currentUserCnt = resJson.count;
             	WIN.setTitleSysMessage(CONF.currentUserCnt + ' onlines');
             	
+            }else if(resJson.action == "LOGIN"){
+            	UTILS.setUserInfo(resJson.user);
+            
             }else if(resJson.action == "MESSAGE"){
             	
             }else {

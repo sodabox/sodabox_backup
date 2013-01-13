@@ -42,8 +42,11 @@ public class SockServer extends AbstractModule {
 
 				if( "JOIN".equals(reqJson.getString("action")) ){
 
+					
+					DEBUG("[[JOIN]] : %s",reqJson.encode());
+					
 					String refer 	= reqJson.getString("refer");
-					JsonObject user = reqJson.getObject("user");
+					JsonObject user = reqJson.getObject("user", new JsonObject());
 					String socketId = sock.writeHandlerID;
 
 					// add socketId for refer 
@@ -102,14 +105,14 @@ public class SockServer extends AbstractModule {
 				String action 	= message.body.getString("action");
 				String socketId = message.body.getString("socketId");
 
-				String action_message = channel+":message";
+				String action_message = channel+":onMessage";
 				
 				if(action_message.equals(action)){
 					message.body.putString("action", "LOGIN");
 					sendMessage(socketId, message.body.encode());
 				}
 				
-				message.reply(new JsonObject().putString("reply", "ok"));
+				//message.reply(new JsonObject().putString("reply", "ok"));
 			}
 
 		};
