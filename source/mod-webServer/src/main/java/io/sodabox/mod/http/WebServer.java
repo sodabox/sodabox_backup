@@ -185,7 +185,7 @@ public class WebServer extends AbstractModule{
 					jsonMessage.putString("refer"		, refer);
 					jsonMessage.putObject("user"		, profileJson);
 
-					eb.publish(NODE_MANAGER.ADDRESS, jsonMessage);
+					eb.send(NODE_MANAGER.ADDRESS, jsonMessage);
 
 
 					// Delete Cookies

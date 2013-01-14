@@ -18,14 +18,18 @@ public class SockServer extends AbstractModule {
 				String socketId = sock.writeHandlerID;
 
 				Session session = getSessionInfo(socketId);
-
+				
 				removeSocketId(session.REFER, socketId);
 
-				if(getSocketsCount(session.REFER) > 0){
+				DEBUG(" ** OUT ** %s / %s ", session.REFER, session.USER);
+				
+				int cnt = getSocketsCount(session.REFER);
+				if(cnt > 0){
 
 					JsonObject json = new JsonObject();
 					json.putString("action", "OUT");
 					json.putObject("user", new JsonObject(session.USER));
+					json.putNumber("count", cnt);
 
 					sendMessageToAll(session.REFER, json.encode());	
 				}
@@ -83,11 +87,34 @@ public class SockServer extends AbstractModule {
 				}else if( "MESSAGE".equals(reqJson.getString("action")) ){
 
 					JsonObject json = new JsonObject();
+					json.putString("action"		, "MESSAGE");
 					json.putString("message"	, reqJson.getString("message"));
 					json.putObject("user"		, reqJson.getObject("user"));
 
 					sendMessageToAll(reqJson.getString("refer"), json.encode());
 
+				}else if( "LOGOUT".equals(reqJson.getString("action")) ){
+					String socketId = sock.writeHandlerID;
+
+					Session session = getSessionInfo(socketId);
+					
+					DEBUG(" ** LOGOUT.. ** %s / %s ", session.REFER, session.USER);
+					
+					int cnt = getSocketsCount(session.REFER);
+					
+					if(cnt > 0){
+
+						JsonObject json = new JsonObject();
+						json.putString("action", "LOGOUT");
+						json.putObject("user", new JsonObject(session.USER));
+						json.putNumber("count", cnt);
+
+						sendMessageToAll(session.REFER, json.encode());	
+					}
+					
+					removeSocketId(session.REFER, socketId);
+					removeSessionInfo(socketId);
+					
 				}else{
 					sock.writeBuffer(data);
 				}

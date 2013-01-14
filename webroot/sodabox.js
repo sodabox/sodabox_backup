@@ -110,6 +110,8 @@ var SODABOX_utils = {
 };
 
 
+
+
 var SODABOX_window = {
     
     rootDivName     : '',
@@ -117,11 +119,12 @@ var SODABOX_window = {
     textareaHeight  : -1,
 
     isLogined       : false,
-    cntNotLogined   : 0,
-    cntLogined      : 0,
     
-    hasClass : function(ele, cls) {
-        return ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'));
+    blinkTimeout : '',
+    
+    hasClass : function(el, val) {
+       var pattern = new RegExp("(^|\\s)" + val + "(\\s|$)");
+    	 return pattern.test(el.className);
     },
     addClass : function(ele, cls) {
         if (!this.hasClass(ele, cls)) ele.className += " " + cls;
@@ -130,22 +133,6 @@ var SODABOX_window = {
         if (this.hasClass(ele, cls)) {
             var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
             ele.className = ele.className.replace(reg, ' ');
-        }
-    },
-    replaceClass : function(ele, oldClass, newClass){
-        if(this.hasClass(ele, oldClass)){
-            this.removeClass(ele, oldClass);
-            this.addClass(ele, newClass);
-        }
-        return;
-    },
-    toggleClass : function(ele, cls1, cls2){
-        if(this.hasClass(ele, cls1)){
-            this.replaceClass(ele, cls1, cls2);
-        }else if(this.hasClass(ele, cls2)){
-            this.replaceClass(ele, cls2, cls1);
-        }else{
-            this.addClass(ele, cls1);
         }
     },
     
@@ -167,19 +154,22 @@ var SODABOX_window = {
             '<div id="'+rootDivName+'_head" class="sodabox_head" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth();" >'+
                 '<div id="'+rootDivName+'_title" class="sodabox_title"></div>'+
                 //'<div id="'+rootDivName+'_options" class="sodabox_options"><img src="'+this.imageServer+'/images/new-icon.png" ></div>'+
-                //'<div id="'+rootDivName+'_options" class="sodabox_options"><a href="javascript:void(0)" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth()">▣</a></div>'+
+                '<div id="'+rootDivName+'_options" class="sodabox_options"><a href="javascript:void(0)" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth()"><img src="'+this.imageServer+'/images/logout.png"></a></div>'+
                 //'<br clear="all"/>'+
             '</div>'+
             '<div id="'+rootDivName+'_content" class="sodabox_content"></div>'+
-            '<div id="'+rootDivName+'_login" class="sodabox_input">&nbsp;&nbsp;Sign In with '+
-                '<a href="#" alt="If you would like to chat, sign in with Facebook or Twitter" onclick="return !window.open(SODABOX.getOauthUrl(\'facebook\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/facebook.png"  alt="If you would like to chat, sign in with Facebook or Twitter" style="cursor:pointer;" /></a>&nbsp;or&nbsp;'+
-                '<a href="#" alt="If you would like to chat, sign in with Facebook or Twitter" onclick="return !window.open(SODABOX.getOauthUrl(\'twitter\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/twitter.png"  alt="If you would like to chat, sign in with Facebook or Twitter" style="cursor:pointer;" /></a>&nbsp;to chat with each other'+
+            '<div id="'+rootDivName+'_login" class="sodabox_input"><center><b>CONNECT WITH</b></center>'+
+	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'facebook\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/facebook.png" style="cursor:pointer;" /></a>&nbsp;'+
+	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'twitter\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/twitter.png" style="cursor:pointer;" /></a>&nbsp;'+
+	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'google\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/google.png" style="cursor:pointer;" /></a>&nbsp;'+
+	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'linkedin\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/linkedin.png" style="cursor:pointer;" /></a>&nbsp;'+
+	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'wordpress\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/wordpress.png" style="cursor:pointer;" /></a>&nbsp;'+
             '</div>' +
             '<div id="'+rootDivName+'_input" class="sodabox_input"><textarea id="'+rootDivName+'_textarea" class="sodabox_textarea" onkeydown="javascript:return SODABOX_window.inputChatMessage(event,this);" ></textarea></div>';
         div_root.style.bottom = '0px';
         div_root.style.right = '20px';
 
-        textareaHeight = document.getElementById(rootDivName+'_textarea').style.height
+        //textareaHeight = document.getElementById(rootDivName+'_textarea').style.height
         //var div_head = document.getElementById(rootDivName+'_head');
         var div_content = document.getElementById(rootDivName+'_content');
         var div_login = document.getElementById(rootDivName+'_login');
@@ -216,8 +206,29 @@ var SODABOX_window = {
         }
     },
     
+    blinkHeader : function(isDone){
+    	if(isDone){
+    		clearInterval(this.blinkTimeout);
+			var titleDivForBlick = document.getElementById(this.rootDivName+'_head')
+    		this.removeClass(titleDivForBlick, 'sodabox_blink');
+    	}else{
+    		clearInterval(this.blinkTimeout);
+    		this.blinkTimeout = 
+	    		setInterval(function(){ 
+	    			var titleDivForBlick = document.getElementById(SODABOX_window.rootDivName+'_head')
+	    			if(SODABOX_window.hasClass(titleDivForBlick, 'sodabox_blink')){
+	    				SODABOX_window.removeClass(titleDivForBlick, 'sodabox_blink');
+	    			}else{
+	    				SODABOX_window.addClass(titleDivForBlick, 'sodabox_blink');
+	    			}
+	    		},1000);
+    	}
+    },
+    
     inputChatMessage : function(event,chatboxtextarea) {
      
+    	this.blinkHeader(true);
+    	
         if(event.keyCode == 13 && !event.shiftKey) {
             
             if(event.preventDefault) {
@@ -265,13 +276,15 @@ var SODABOX_window = {
         
         var chatDiv = document.createElement("div");
         this.addClass(chatDiv, 'sodabox_message');
-        chatDiv.innerHTML = '<span class="sodabox_messagefrom"><a target="_blank" href="'+user.link+'" class="sodabox_userlink" alt="GO TO User Page!">'+user.name+'</a>:&nbsp;&nbsp;</span><span class="sodabox_messagecontent">'+message+'</span>&nbsp;&nbsp;&nbsp;<span class="sodabox_messagetime">'+this.getNowStr()+'</span>';
+        chatDiv.innerHTML = 
+        	'<span class="sodabox_messagefrom"><a target="_blank" href="'+user.link+'" class="sodabox_userlink" alt="GO TO User Page!">'+user.name+'</a>:&nbsp;&nbsp;</span><span class="sodabox_messagecontent">'+
+        	decodeURIComponent(message)+'</span>&nbsp;&nbsp;&nbsp;<span class="sodabox_messagetime">'+this.getNowStr()+'</span>';
         
         div_content.appendChild(chatDiv);
         div_content.scrollTop = div_content.scrollHeight;
 
         if(document.getElementById(this.rootDivName+'_content').style.display != 'block'){
-            document.getElementById(this.rootDivName+'_title').innerHTML = '<b>Online Users : '+(this.cntNotLogined + this.cntLogined)+'</b>&nbsp;&nbsp; < <i>new message</i> !! >';
+        	this.blinkHeader();
         }
 
     },
@@ -282,7 +295,7 @@ var SODABOX_window = {
         
         var chatDiv = document.createElement("div");
         this.addClass(chatDiv, 'sodabox_message');
-        chatDiv.innerHTML = '<span class="sodabox_systemcontent"> > '+message+'</span>';
+        chatDiv.innerHTML = '<span class="sodabox_systemcontent">'+message+'</span>';
         
         div_content.appendChild(chatDiv);
         div_content.scrollTop = div_content.scrollHeight;
@@ -291,6 +304,7 @@ var SODABOX_window = {
     
     toggleChatBoxGrowth : function() {
 
+    	this.blinkHeader(true);
         var div_content = document.getElementById(this.rootDivName+'_content');
 
         if (div_content.style.display == 'none') {  
@@ -312,32 +326,16 @@ var SODABOX_window = {
             document.getElementById(this.rootDivName+'_login').style.display = 'none';
             document.getElementById(this.rootDivName+'_input').style.display = 'none';
         }
-
-        this.setTitleMessage();
        
     },
 
-    setTitleMessage : function(){
-
-        var str = '';
-
-        if(document.getElementById(this.rootDivName+'_content').style.display == 'block'){
-            str = 'Online Users : '+(this.cntNotLogined + this.cntLogined)+'&nbsp;&nbsp;&nbsp;( ' +this.cntLogined+' Logined )';
-        }else{
-            str = '<b>Online Users : '+(this.cntNotLogined + this.cntLogined)+'</b>';
-        }
-
-        var div_title = document.getElementById(this.rootDivName+'_title');
-        div_title.innerHTML = str;
-    },
-
-    setTitleSysMessage : function(message){
+    setTitleMessage : function(message){
 
         var div_title = document.getElementById(this.rootDivName+'_title');
         div_title.innerHTML = message;
     },
     
-    logined : function(target){
+    logined : function(){
         
         var div_login = document.getElementById(this.rootDivName+'_login');
         var div_input = document.getElementById(this.rootDivName+'_input');
@@ -369,24 +367,10 @@ var SODABOX_window = {
             div_input.style.display = 'none';    
         }
 
+        SODABOX_utils.delUserInfo();
+        
         this.isLogined = false;
 
-    },
-    
-    setUserUnfos : function(user, users){
-        var str             = '';
-        this.cntNotLogined   = 0;
-        this.cntLogined      = 0;
-        for(var cnt=0;cnt<users.length;cnt++){
-            str = str +' '+ users[cnt].name;
-            if(users[cnt].name == 'NONE'){
-                this.cntNotLogined = this.cntNotLogined + 1;
-            }else{
-                this.cntLogined = this.cntLogined + 1;
-            }
-        }
-        
-        this.setTitleMessage();
     },
 
     getNowStr : function(){
@@ -410,6 +394,7 @@ var SODABOX_window = {
     
 };
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////// SODABOX Module /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,34 +403,19 @@ var SODABOX = (function(CONF, UTILS, WIN) {
 
     /*** PRIAVTE AREA ***/
 
-    // ########################## variables
-
-    var _d      = {}; // urlApp / urlSocket / divName / isReady
-    var _auth   = {}; // target / user(Object)
-    var _socket;
-    var _socketid;
-
     // ########################## Private functions
-
-    /*
-     * " OAuth " Processing
-     * (public) SODABOX.openOAuthBox > SODABOX.callbackOAuthFacebook or SODABOX.callbackOAuthTwitter
-     */
 
     var fn_tryOAuthProcess = function(strategy){
         UTILS.loadJson(_d.urlWeb+'/user', 'SODABOX.callbackOAuth&_tryTarget='+strategy+'&SC='+_socketid+'&CN='+_d.channel);
     };
-
 
     var fn_callbackOAuth = function(data){
 
         if(data.isAuth){
             
             _auth.user = data.user;
-
             
             WIN.logined(data.user.target);
-
             
             _socket.emit('join', {
                 UR : _auth.user,
@@ -468,14 +438,22 @@ var SODABOX = (function(CONF, UTILS, WIN) {
      * " Init " Processing
      */
     var fn_init = function(){
-
     	console.log(" # 1. fn_init \n\t"+JSON.stringify(CONF));
         UTILS.loadJson(CONF.httpUrl+'/node?refer='+CONF.refer, 'SODABOX.callbackInit');
+    };
+    var fn_reInit = function(){
+    	console.log(" # 1. fn_init \n\t"+JSON.stringify(CONF));
+        UTILS.loadJson(CONF.httpUrl+'/node?refer='+CONF.refer, 'SODABOX.callbackSocketCallback');
     };
 
     var fn_callbackInit = function(data){
 
     	console.log(" # 2. callbackInit \n\t"+JSON.stringify(data));
+    	
+    	if(data.status != "ok"){
+			console.log("ERROR");
+    		return;
+    	}
     	
         CONF.serverInfo = data;
 
@@ -489,26 +467,37 @@ var SODABOX = (function(CONF, UTILS, WIN) {
         	WIN.logined();
         }
         
-        WIN.setTitleSysMessage('now loading .....');
+        WIN.setTitleMessage('now loading .....');
         
         UTILS.loadScript("http://cdn.sockjs.org/sockjs-0.3.min.js", fn_callbackSocketCallback);
     };
     
-    var fn_callbackSocketCallback = function(){
+    var fn_callbackSocketCallback = function(data){
+    	
+    	if(data){ // re connect !!
+
+        	console.log(" # 2(2). callbackSocketCallback \n\t"+JSON.stringify(data));
+    		if(data.status != "ok"){
+    			console.log("ERROR");
+        		return;
+        	}
+    		CONF.serverInfo = data;
+    	}
 
         WIN.showRootDiv(true);
 
-        WIN.setTitleSysMessage('connecting to Server.....');
+        WIN.setTitleMessage('connecting to Server.....');
         
         CONF.sock = new SockJS('http://'+CONF.serverInfo.host+':'+CONF.serverInfo.port+'/message');
         
         CONF.sock.onopen = function(e) {
             
-            WIN.setTitleSysMessage('connected');
+            WIN.setTitleMessage('Connected');
             
             var reqJson = {
-            	action : "JOIN",
-            	refer : CONF.refer
+            	action 	: "JOIN",
+            	refer 	: CONF.refer,
+            	user 	: CONF.user
             };
             CONF.sock.send(JSON.stringify(reqJson));
         };
@@ -520,95 +509,32 @@ var SODABOX = (function(CONF, UTILS, WIN) {
             if(resJson.action == "JOIN"){
             	CONF.socketId = resJson.socketId;
             	CONF.currentUserCnt = resJson.count;
-            	
+            	WIN.setTitleMessage("ONLINE : "+CONF.currentUserCnt);
             }else if(resJson.action == "IN"){
             	CONF.currentUserCnt = resJson.count;
-            	WIN.setTitleSysMessage(CONF.currentUserCnt + ' onlines');
-            	
+            	WIN.setTitleMessage("ONLINE : "+CONF.currentUserCnt);
             }else if(resJson.action == "LOGIN"){
             	UTILS.setUserInfo(resJson.user);
-            
+            	CONF.isLogined = true;
+            	CONF.user = resJson.user;
+            	WIN.logined();
+            }else if(resJson.action == "LOGOUT"){
+            	CONF.currentUserCnt = resJson.count;
+            	WIN.setTitleMessage("ONLINE : "+CONF.currentUserCnt);
+            }else if(resJson.action == "OUT"){
+            	CONF.currentUserCnt = resJson.count;
+            	WIN.setTitleMessage("ONLINE : "+CONF.currentUserCnt);
             }else if(resJson.action == "MESSAGE"){
-            	
+            	WIN.setChatMessage(resJson.user, resJson.message);
             }else {
             	
             }
             
-            
-            
         };
         CONF.sock.onclose = function() {
             console.log('close');
+            fn_reInit();
         };
-        
-        /*
-        _socket = io.connect(_d.urlSocket);
-
-        _socket.on('connect', function () {
-
-            //console.log(' > connected - '+JSON.stringify(_auth));
-
-            WIN.setTitleSysMessage('connected');
-            var u;
-            if(_auth.user){
-                u = _auth.user;
-            }else{
-                u = {
-                    id : 'NONE',
-                    name : 'NONE',
-                    link : 'NONE'
-                };
-                
-            }
-            _socket.emit('join', {
-                UR : u,
-                AU : _d.authkey,
-                CN : _d.channel,
-                MG : 'JOIN',
-                r  : _d.range
-            });
-        });
-
-        _socket.on('join', function(msg) {
-            _socketid = msg.socketId;
-            WIN.setTitleSysMessage('');
-        });
-       
-       
-        _socket.on('S_MSG', function(msg) {
-            //console.log(' [R] S_MSG : '+JSON.stringify(msg));
-            if(msg.MG == 'IN'){
-                
-            }else if(msg.MG == 'OUT'){
-                // WIN.setSysMessage('['+msg.UR.name+'] was exited');
-            }else if(msg.MG == 'AUTH'){
-	            _auth.user = msg._users;
-                
-                WIN.logined();
-                
-                _socket.emit('join', {
-                    UR : _auth.user,
-                    AU : _d.authkey,
-                    CN : _d.channel,
-                    MG : 'JOIN',
-                    r  : _d.range
-                });
-
-            }
-            
-            WIN.setUserUnfos(msg.UR, msg._users);
-            
-        });
-       
-        _socket.on('M_MSG', function(msg) {
-            //console.log(' [R] M_MSG : '+JSON.stringify(msg));
-            WIN.setChatMessage(msg.UR, msg.MG);
-        });
-
-        _socket.on('extendMessage', function(data) {
-            //console.log(' [R] extendMessage : '+data);
-        });
-       */
     };
 
 
@@ -623,11 +549,15 @@ var SODABOX = (function(CONF, UTILS, WIN) {
     };
 
     var fn_logout = function(){
-        UTILS.loadJson(_d.urlWeb+'/logoutAuth', 'SODABOX.callbackLogout');
-    };
-
-    var fn_callbackLogout = function(){
-        WIN.logout();
+    	var reqJson = {
+        	action 	: "LOGOUT",
+        	refer 	: CONF.refer,
+        	user 	: CONF.user
+    	};
+    	CONF.sock.send(JSON.stringify(reqJson));
+    	
+    	WIN.logout();
+    	CONF.isLogined = false;
     };
 
     /*** PUBLIC AREA (func) ***/
@@ -651,6 +581,9 @@ var SODABOX = (function(CONF, UTILS, WIN) {
         callbackInit : function(data){
             fn_callbackInit(data);
         },
+        callbackSocketCallback : function(data){
+        	fn_callbackSocketCallback(data);
+        },
         tryOAuth : function(target) {
             fn_tryOAuthProcess(target);
         },
@@ -665,9 +598,6 @@ var SODABOX = (function(CONF, UTILS, WIN) {
         },
         logout : function() {
             fn_logout();
-        },
-        callbackLogout : function() {
-            fn_callbackLogout();
         },
         getOauthUrl : function(targetName){
         	
