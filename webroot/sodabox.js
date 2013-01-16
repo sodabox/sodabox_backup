@@ -42,7 +42,16 @@ var SODABOX_utils = {
         script.src = url;
         document.getElementsByTagName("head")[0].appendChild(script);
     },
-
+	
+	loadCss : function (url) {
+		var link = document.createElement('link');
+		link.type = 'text/css';
+		link.rel = 'stylesheet';
+		link.href = url;
+		document.getElementsByTagName('head')[0].appendChild(link);
+		return link;
+	},
+	
     loadJson : function(url, callbackStr){
 
         var script = document.createElement("script");
@@ -117,6 +126,9 @@ var SODABOX_window = {
     rootDivName     : '',
     imageServer     : '',
     textareaHeight  : -1,
+	
+	divCloseWidth	: '100px',
+	divOpenWidth	: '300px',
 
     isLogined       : false,
     
@@ -135,42 +147,48 @@ var SODABOX_window = {
             ele.className = ele.className.replace(reg, ' ');
         }
     },
-    
+    getStyle : function(el, cssprop){
+		if (el.currentStyle) //IE
+			return el.currentStyle[cssprop];
+		else if (document.defaultView && document.defaultView.getComputedStyle) //Firefox
+			return document.defaultView.getComputedStyle(el, "")[cssprop];
+		else //try and get inline style
+			return el.style[cssprop];
+	},
     initWin : function(rootDivName, imageServer){
         
         this.rootDivName = rootDivName;
         this.imageServer = imageServer;
-        
+		
+		SODABOX_utils.loadCss(this.imageServer+'sodabox.css');
+		
         var div_root = document.getElementById(rootDivName);
 
+		
         if(div_root === null){
             div_root = document.createElement('div');
             div_root.id = rootDivName;
+			div_root.style.bottom = '0px';
+			div_root.style.right = '50px';
+			div_root.style.width = this.divOpenWidth;
             this.addClass(div_root, "sodabox");
             document.getElementsByTagName('body')[0].appendChild(div_root);
         }
-
+		
+		this.divOpenWidth = this.getStyle(div_root, 'width');
+		
         div_root.innerHTML = 
-            '<div id="'+rootDivName+'_head" class="sodabox_head" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth();" >'+
-                '<div id="'+rootDivName+'_title" class="sodabox_title"></div>'+
-                //'<div id="'+rootDivName+'_options" class="sodabox_options"><img src="'+this.imageServer+'/images/new-icon.png" ></div>'+
-                '<div id="'+rootDivName+'_options" class="sodabox_options"><a href="javascript:void(0)" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth()"><img src="'+this.imageServer+'/images/logout.png"></a></div>'+
-                //'<br clear="all"/>'+
-            '</div>'+
-            '<div id="'+rootDivName+'_content" class="sodabox_content"></div>'+
-            '<div id="'+rootDivName+'_login" class="sodabox_input"><center><b>CONNECT WITH</b></center>'+
-	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'facebook\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/facebook.png" style="cursor:pointer;" /></a>&nbsp;'+
-	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'twitter\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/twitter.png" style="cursor:pointer;" /></a>&nbsp;'+
-	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'google\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/google.png" style="cursor:pointer;" /></a>&nbsp;'+
-	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'linkedin\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/linkedin.png" style="cursor:pointer;" /></a>&nbsp;'+
-	            '<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'wordpress\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/wordpress.png" style="cursor:pointer;" /></a>&nbsp;'+
-            '</div>' +
-            '<div id="'+rootDivName+'_input" class="sodabox_input"><textarea id="'+rootDivName+'_textarea" class="sodabox_textarea" onkeydown="javascript:return SODABOX_window.inputChatMessage(event,this);" ></textarea></div>';
-        div_root.style.bottom = '0px';
-        div_root.style.right = '20px';
+		'<div id="'+rootDivName+'_head" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth();" class="sodabox_head" ><div id="'+rootDivName+'_title" class="sodabox_title"></div><div id="'+rootDivName+'_options" class="sodabox_options"><a href="javascript:void(0)" onclick="javascript:return SODABOX_window.toggleChatBoxGrowth()"><img src="'+this.imageServer+'/images/logout-white.png"></a></div><br clear="all"></div>'+
+		'<div id="'+rootDivName+'_content" class="sodabox_content"></div>'+
+		'<div id="'+rootDivName+'_input" class="sodabox_input"><textarea id="'+rootDivName+'_textarea" class="sodabox_textarea" onkeydown="javascript:return SODABOX_window.inputChatMessage(event,this);" ></textarea></div>'+
+		'<div id="'+rootDivName+'_login" class="sodabox_login"><center><b>CONNECT WITH</b></center>'+
+		'<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'facebook\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/facebook_32.png" style="cursor:pointer;" /></a>&nbsp;'+
+		'<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'twitter\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/twitter_32.png" style="cursor:pointer;" /></a>&nbsp;'+
+		'<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'google\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/google_32.png" style="cursor:pointer;" /></a>&nbsp;'+
+		'<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'linkedin\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/linkedin_32.png" style="cursor:pointer;" /></a>&nbsp;'+
+		'<a href="#" onclick="return !window.open(SODABOX.getOauthUrl(\'wordpress\'),\'SODABOX_OAUTH\',\'menubar=no,location=no,resizable=yes,scrollbars=yes,status=yes,width=800,height=450\')" target="_blank"><img src="'+this.imageServer+'/images/wordpress_32.png" style="cursor:pointer;" /></a>&nbsp;'+
+		'</div>'
 
-        //textareaHeight = document.getElementById(rootDivName+'_textarea').style.height
-        //var div_head = document.getElementById(rootDivName+'_head');
         var div_content = document.getElementById(rootDivName+'_content');
         var div_login = document.getElementById(rootDivName+'_login');
         var div_input = document.getElementById(rootDivName+'_input');
@@ -306,9 +324,15 @@ var SODABOX_window = {
 
     	this.blinkHeader(true);
         var div_content = document.getElementById(this.rootDivName+'_content');
-
+		var div_root 	= document.getElementById(this.rootDivName);
         if (div_content.style.display == 'none') {  
 
+			document.getElementById(this.rootDivName).style.width = this.divOpenWidth;
+            document.getElementById(this.rootDivName+'_options').style.display = 'block';
+			document.getElementById(this.rootDivName+'_title').style.float = 'left';
+			document.getElementById(this.rootDivName+'_title').style.textAlign = '';
+			document.getElementById(this.rootDivName+'_title').style.width = '';
+			
             div_content.style.display = 'block';
             if(this.isLogined){
 
@@ -322,9 +346,16 @@ var SODABOX_window = {
 
         } else {
 
+			document.getElementById(this.rootDivName).style.width = this.divCloseWidth;
+			document.getElementById(this.rootDivName+'_title').style.float = '';
+			document.getElementById(this.rootDivName+'_title').style.textAlign = 'center';
+			document.getElementById(this.rootDivName+'_title').style.width = '100%';
             div_content.style.display = 'none';
             document.getElementById(this.rootDivName+'_login').style.display = 'none';
             document.getElementById(this.rootDivName+'_input').style.display = 'none';
+            document.getElementById(this.rootDivName+'_options').style.display = 'none';
+            document.getElementById(this.rootDivName+'_input').style.display = 'none';
+			
         }
        
     },
