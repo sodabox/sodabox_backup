@@ -106,6 +106,15 @@ public class TwitterImpl extends AbstractProvider implements AuthProvider{
 			}
 			profile.setProviderId(getProviderId());
 */
+			
+			JSONObject pObj = new JSONObject(result);
+			if (pObj.has("name")) {
+				profile.setName(pObj.getString("screen_name"));
+			}
+			if (pObj.has("url")) {
+				profile.setLink("https://twitter.com/"+pObj.getString("url"));
+			}
+			
 			return profile;
 		} catch (Exception e) {
 			throw new ServerDataException(

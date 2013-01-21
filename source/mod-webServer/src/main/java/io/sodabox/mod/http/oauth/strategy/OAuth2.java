@@ -51,6 +51,7 @@ public class OAuth2 implements OAuthStrategyBase {
 		sb.append(separator);
 		sb.append("client_id=").append(oauth.getConfig().get_consumerKey());
 		sb.append("&response_type=code");
+		sb.append("&display=popup");
 		sb.append("&redirect_uri=").append(this.successUrl);
 		if (scope != null) {
 			sb.append("&scope=").append(scope);

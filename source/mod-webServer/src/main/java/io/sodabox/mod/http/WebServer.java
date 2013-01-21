@@ -4,6 +4,10 @@ import io.sodabox.mod.http.oauth.Profile;
 import io.sodabox.mod.http.oauth.strategy.RequestToken;
 import io.sodabox.mod.http.oauth.utils.AccessGrant;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,9 +60,9 @@ public class WebServer extends AbstractModule{
 			JsonObject reqJson = new JsonObject();
 			reqJson.putString("action"	, NODE_MANAGER.ACTION.GET_NODE);
 			reqJson.putString("refer"	, req.params().get("refer"));
-			
+
 			if(!StringUtils.isEmpty(req.params().get("refer"))){
-				
+
 				eb.send(NODE_MANAGER.ADDRESS, reqJson, new Handler<Message<JsonObject>>() {
 					public void handle(Message<JsonObject> message) {
 
@@ -78,7 +82,7 @@ public class WebServer extends AbstractModule{
 
 					}
 				});
-				
+
 			}else{
 				req.response.end("");    
 			}
@@ -210,6 +214,46 @@ public class WebServer extends AbstractModule{
 				req.response.end("<html><body><h1>^^</h1><br> Denied."+cookieEncoder.encode()+"</body></html>");
 
 			}
+
+		}else if("/preview".equals(req.path)){
+
+			String addHtml = 
+					"<script type=\"text/javascript\" src=\"http://www.sodabox.io/sodabox.js\" charset=\"utf-8\"></script><script language=\"javascript\">SODABOX.init();</script>";
+			StringBuffer html = new StringBuffer();
+
+			String result = "";
+			if(!StringUtils.isEmpty(req.params().get("url"))){
+				try {
+
+					URL uu = new URL(req.params().get("url"));
+					BufferedReader in = new BufferedReader(
+							new InputStreamReader(uu.openStream(), "UTF-8"));
+
+					String inputLine;
+					while ((inputLine = in.readLine()) != null)
+						html.append(inputLine);
+					in.close();
+
+					
+					String baseHref = "<base href=\""+req.params().get("url")+"\">";
+					
+					result = 
+							html.substring(0, html.indexOf("</head>")) +
+							baseHref +
+							html.substring(html.indexOf("</head>"), html.indexOf("</body>")) +
+							addHtml +
+							html.substring(html.indexOf("</body>"));
+
+				} catch (IOException e) {
+					e.printStackTrace();
+					result = e.getMessage();
+				}
+			}else{
+				result = "url is not valid";
+			}
+
+			req.response.headers().put(HttpHeaders.Names.CONTENT_TYPE	, "text/html");
+			req.response.end(result);
 
 		}
 		else{

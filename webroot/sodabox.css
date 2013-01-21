@@ -5,9 +5,11 @@
 	display:none;
 	font-family:"Lucida Grande",Verdana,Arial,"Bitstream Vera Sans",sans-serif;
 	font-size:11px;
+	z-index:9999;
 }
 
 .sodabox_head {
+	cursor:hand;
 	background-color: #2d2d2d;
 	padding:7px;
 	color: #ffffff;
@@ -34,10 +36,11 @@
 	border-bottom:1px solid #eeeeee;
 	background-color: #ffffff;
 	line-height: 1.3em;
+	text-align: left;
 }
 
 .sodabox_input {
-	padding: 5px;
+	padding: 1px;
 	background-color: #ffffff;
 	border-left:1px solid #cccccc;
 	border-right:1px solid #cccccc;
@@ -47,24 +50,31 @@
 .sodabox_login {
 	padding: 5px;
 	background-color: #ffffff;
-	border-left:2px solid #cccccc;
-	border-right:2px solid #cccccc;
+	border-left:1px solid #cccccc;
+	border-right:1px solid #cccccc;
 	border-top:1px solid #cccccc;
-	border-bottom:2px solid #cccccc;
+	border-bottom:1px solid #cccccc;
 	text-align: center;
 	vertical-align: middle;
 	color: #666666;
 }
 .sodabox_login img{
+     vertical-align: middle;
 	border:none;
+}
+.sodabox_login span {
+     font-weight: bold;
+     vertical-align: middle;
+     display:inline-block;
+     padding: 5px;
 }
 
 .sodabox_textarea {
 	width: 100%;
-	height:44px;
-	padding:3px 0pt 3px 3px;
-	border: 1px solid #eeeeee;
-	margin: 1px;
+	height:30px;
+	padding:3px 0px 3px 0px;
+	border: 1px solid #9c9c9c;
+	margin: 0px;
 	overflow:hidden;
 }
 
@@ -81,6 +91,11 @@
 
 .sodabox_message {
 	margin-left:1em;
+}
+
+.sodabox_messagetime{
+	color:#666666;
+	font-size:70%;
 }
 
 .sodabox_info {

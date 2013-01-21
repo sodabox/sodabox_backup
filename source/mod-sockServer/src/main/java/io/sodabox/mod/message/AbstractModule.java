@@ -117,6 +117,9 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 
 
 	protected void sendMessage(String socketId, String message){
+		
+		DEBUG("SEND MESSAGE %s -> %s", socketId, message);
+		
 		vertx.eventBus().send(socketId, new Buffer(message));
 	}
 
