@@ -1,14 +1,15 @@
 package io.sodabox.mod;
 
-import io.sodabox.mod.server.NodeManager;
-import io.sodabox.mod.server.RedisNodeManager;
-import io.sodabox.mod.server.ServerNodeManager;
-import io.sodabox.mod.server.node.RedisPoolNode;
-import io.sodabox.mod.server.node.ServerNode;
-import io.sodabox.mod.server.zk.ZooKeeperClient;
-import io.sodabox.mod.server.zk.ZooKeeperClient.Credentials;
-import io.sodabox.mod.server.zk.ZooKeeperConnectionException;
-import io.sodabox.mod.server.zk.ZooKeeperUtils;
+
+import io.sodabox.common.server.NodeManager;
+import io.sodabox.common.server.RedisNodeManager;
+import io.sodabox.common.server.ServerNodeManager;
+import io.sodabox.common.server.node.RedisPoolNode;
+import io.sodabox.common.server.node.ServerNode;
+import io.sodabox.common.server.zk.ZooKeeperClient;
+import io.sodabox.common.server.zk.ZooKeeperClient.Credentials;
+import io.sodabox.common.server.zk.ZooKeeperConnectionException;
+import io.sodabox.common.server.zk.ZooKeeperUtils;
 
 import java.util.List;
 
@@ -46,13 +47,13 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 
 		log = container.getLogger();
 		address = getMandatoryStringConfig("address");
-		
+
 		JsonArray 	zookeeperServers 	= getOptionalArrayConfig("zookeeper", null);
 		int 		zookeeperTomeout 	= getOptionalIntConfig("zookeeper.timeout", ZooKeeperUtils.DEFAULT_ZK_SESSION_TIMEOUT);
 		String 		mode 				= getOptionalStringConfig("mode", "WEB-SERVER");
 
 		try {
-			
+
 			zkClient = new ZooKeeperClient(zookeeperTomeout, Credentials.NONE, zookeeperServers);
 
 		} catch (ZooKeeperConnectionException e) {
@@ -76,9 +77,9 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 
 			// watching !!!
 			try {
-				
+
 				ZooKeeperUtils.ensurePath(zkClient, ZooDefs.Ids.OPEN_ACL_UNSAFE, NODE.ROOT_NODE);
-				
+
 				List<String> channels = zkClient.get().getChildren(NODE.ROOT_NODE, new Watcher() {
 					public void process(WatchedEvent event) {
 						try {
@@ -95,13 +96,13 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 
 					isReady = true;
 					refreshNode(channels);
-					
+
 				}else{
-					
+
 					ERROR("message server is not existed from [%s]..", NODE.ROOT_NODE);
-					
+
 				}
-				
+
 			} catch (KeeperException | InterruptedException
 					| ZooKeeperConnectionException e) {
 				e.printStackTrace();
@@ -122,7 +123,7 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 			}
 
 		}
-		
+
 		eb.registerHandler(address, this);
 	}
 
@@ -149,9 +150,9 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 		ZooKeeperUtils.ensurePath(zkClient, ZooDefs.Ids.OPEN_ACL_UNSAFE, NODE.ROOT_NODE);
 
 		if (zkClient.get().exists(NODE.ROOT_NODE+"/"+channel, false) == null) {
-			
+
 			DEBUG("create node [%s]", data.encode());
-			
+
 			zkClient.get().create(
 					NODE.ROOT_NODE+"/"+channel, 
 					data.encode().getBytes(), 
@@ -183,15 +184,15 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 			redisNodeManager.refreshNode(redises);
 
 			isReady = true;
-			
+
 		}else{
-			
+
 			isReady = false;
-			
+
 			ERROR("message server is not existed from [%s]", NODE.ROOT_NODE);
 			serverNodeManager.destoryNode();
 			redisNodeManager.destoryNode();
-			
+
 		}
 
 	}
@@ -199,19 +200,19 @@ public class NodeModule extends BusModBase implements Handler<Message<JsonObject
 	@Override
 	public void handle(Message<JsonObject> message) {
 		String action = message.body.getString("action");
-		
+
 		if(isReady){
-			
+
 			if(action.startsWith("server")){
 				serverNodeManager.messageHandle(message);
 			}else if(action.startsWith("message")){
 				redisNodeManager.messageHandle(message);
 			}
-			
+
 		}else{
 			sendError(message, "message server is not existed");
 		}
-		
+
 	}
 
 }

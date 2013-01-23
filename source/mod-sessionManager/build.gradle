@@ -19,15 +19,13 @@ repositories {
 }
 
 dependencies {
-  //compile      "org.apache.zookeeper:zookeeper:$zookeeperVersion"
   compile      "redis.clients:jedis:$jedisVersion"
-  compile      "com.google.guava:guava:$guavaVersion"
   compile      "commons-lang:commons-lang:2.6"
-  compile      "org.slf4j:slf4j-log4j12:1.6.6"
   compile      fileTree(dir: '../../common/lib', include: '*.*')
   
   provided     "org.vert-x:vertx-core:$vertxVersion"
   provided     "org.vert-x:vertx-platform:$vertxVersion"
+  
   
   testCompile  "org.vert-x:vertx-lang-java:$vertxVersion"
   testCompile  "org.vert-x:vertx-lang-rhino:$vertxVersion"
