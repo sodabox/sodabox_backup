@@ -1,5 +1,7 @@
 package io.sodabox.mod.message;
 
+import io.sodabox.common.api.NODE_WATCHER;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
@@ -55,6 +57,17 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 		sockServer.installApp(new JsonObject().putString("prefix", "/message"), this);
 		server.listen(getOptionalIntConfig("port", 80), getOptionalStringConfig("host", "0.0.0.0"));
 
+		// create server node!!
+		JsonObject createNodeAction = new JsonObject();
+		createNodeAction.putString("action", NODE_WATCHER.ACTION.CREATE_NODE);
+		createNodeAction.putString("channel", channel);
+		createNodeAction.putObject("data", 
+				new JsonObject().putString("channel", channel)
+				.putString("host", getOptionalStringConfig("host", "0.0.0.0"))
+				.putNumber("port", getOptionalIntConfig("port", 80))
+				);
+		eb.send(NODE_WATCHER.ADDRESS, createNodeAction);
+		
 		eb.registerHandler(address, getMessageHandler());
 
 		DEBUG("Message Server(%s) is started [%s:%d]",
@@ -65,7 +78,6 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 	}
 
 	protected abstract Handler<Message<JsonObject>> getMessageHandler();
-
 
 	protected String getRefer(String str){
 		if(str.indexOf("https://") >= 0){

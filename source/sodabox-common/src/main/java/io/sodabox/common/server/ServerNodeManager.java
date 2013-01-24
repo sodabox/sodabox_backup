@@ -109,20 +109,6 @@ public class ServerNodeManager extends AbstractNodeManager<ServerNode>{
 					.putString("field"	, message.body.getString("field"))
 					);
 			break;
-		case SERVER.NODE_BY_CHANNEL:
-			String channel	= message.body.getString("channel");
-			JsonObject rtnObj = getServerNodeByChannel(channel);
-			if(rtnObj == null){
-				sendOK(message, getServerNodeByChannel(channel));
-			}else{
-				// @ TODO createException !!! 
-				sendStatus("error", message, 
-						new JsonObject()
-				.putString("refer"	, message.body.getString("refer"))
-				.putString("key"	, message.body.getString("key"))
-				.putString("field"	, message.body.getString("field")));
-			}
-			break;
 		case SERVER.OK:
 			sendOK(message, new JsonObject().putBoolean("ok", isOk));
 			break;   
@@ -148,26 +134,10 @@ public class ServerNodeManager extends AbstractNodeManager<ServerNode>{
 		return json;
 	}
 
-
-	public JsonObject getServerNodeByChannel(String channel){
-
+	@Override
+	public ServerNode getNodeByKey(String channel){
 		ServerNode serverNode = serverList.get(channel);
-
-		if(serverNode == null){
-			return null;
-		}
-
-		JsonObject json = new JsonObject();
-		json.putString("channel", 	serverNode.getChannel());
-		json.putString("host", 		serverNode.getHost());
-		json.putNumber("port", 		serverNode.getPort());
-
-		DEBUG("getServerNode : %s ", json);
-
-		return json;
+		return serverNode;
 	}
-
-
-
 
 }

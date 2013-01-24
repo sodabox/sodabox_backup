@@ -1,5 +1,5 @@
 
-
-
 < consistent hashing 가중치 부여 하기.
+
+java -jar ./common/yuicompressor-2.4.7.jar ./webroot/sodabox.js -o ./webroot/sodabox-min.js
 

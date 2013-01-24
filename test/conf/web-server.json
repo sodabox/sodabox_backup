@@ -16,6 +16,28 @@
 		
 	},
 	
+	"SESSION-MANAGER": {
+	
+		"module" : "io.sodabox.mod-sessionManager-v1.2",
+		
+		"instances" : 2,
+		
+		"config": {
+			"address": "mod-sessionManager",
+			"mode": "WEB-SERVER",
+			"zookeeper": [
+				{"host" : "localhost", "port" : "2181"}
+			],
+			"nodes": {
+				"server": {
+					"host": "127.0.0.1",
+					"port": 8880
+				}
+			}
+		}
+		
+	},
+	
 	"WEB-SERVER": {
 		
 		"module" : "io.sodabox.mod-webServer-v1.2",

@@ -10,6 +10,7 @@ public interface NodeManager<O> {
 	public void destoryNode();
 	public void messageHandle(Message<JsonObject> message);
 	public O getNode(String keyOrRefer);
+	public O getNodeByKey(String key);
 	
 	
 }

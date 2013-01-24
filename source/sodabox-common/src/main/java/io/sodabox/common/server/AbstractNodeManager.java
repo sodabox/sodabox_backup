@@ -30,6 +30,11 @@ public abstract class AbstractNodeManager<X> implements NodeManager<X>{
 	public X getNode(String keyOrRefer) {
 		return nodes.get(keyOrRefer);
 	}
+	
+	@Override
+	public X getNodeByKey(String key) {
+		return getNode(key);
+	}
 
 
 	protected void DEBUG(String message, Object... args ){

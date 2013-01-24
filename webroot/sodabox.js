@@ -16,8 +16,8 @@ var SODABOX_utils = {
         var hash = 0;
         if (s.length === 0) return hash;
         for (var i = 0; i < s.length; i++) {
-                var char = s.charCodeAt(i);
-                hash = ((hash<<5)-hash)+char;
+                var char1 = s.charCodeAt(i);
+                hash = ((hash<<5)-hash)+char1;
                 hash = hash & hash; // Convert to 32bit integer
         }
         return hash;
@@ -328,7 +328,7 @@ var SODABOX_window = {
 
 			document.getElementById(this.rootDivName).style.width = this.divOpenWidth;
             document.getElementById(this.rootDivName+'_options').style.display = 'block';
-			document.getElementById(this.rootDivName+'_title').style.float = 'left';
+			document.getElementById(this.rootDivName+'_title').style["float"] = 'left';
 			document.getElementById(this.rootDivName+'_title').style.textAlign = '';
 			document.getElementById(this.rootDivName+'_title').style.width = '';
 			
@@ -346,7 +346,7 @@ var SODABOX_window = {
         } else {
 
 			document.getElementById(this.rootDivName).style.width = this.divCloseWidth;
-			document.getElementById(this.rootDivName+'_title').style.float = '';
+			document.getElementById(this.rootDivName+'_title').style["float"] = '';
 			document.getElementById(this.rootDivName+'_title').style.textAlign = 'center';
 			document.getElementById(this.rootDivName+'_title').style.width = '100%';
             div_content.style.display = 'none';
