@@ -30,6 +30,8 @@ public class NodeWatcher extends BusModBase implements Handler<Message<JsonObjec
 	private String 			address;
 	private String 			rootPath;
 	private boolean 		isReady;
+	private boolean 		isWatching;
+	private boolean			isCreated;
 
 	public void start() {
 
@@ -70,28 +72,42 @@ public class NodeWatcher extends BusModBase implements Handler<Message<JsonObjec
 
 		if(isReady){
 
-			if(NODE_WATCHER.ACTION.CREATE_NODE.equals(action)){ // node »ý¼º
-				try {
-					createNode(
-							message.body.getString("channel"),
-							message.body.getObject("data")
-							);
-
-					// OK 
+			if(NODE_WATCHER.ACTION.CREATE_NODE.equals(action)){
+				
+				if(isCreated){
+					
 					sendOK(message);
-
-				} catch (ZooKeeperConnectionException 
-						| InterruptedException
-						| KeeperException e) {
-					e.printStackTrace();
-
-					// ERROR
-					sendError(message, e.getMessage());
-
+					
+				}else{
+				
+					try {
+						createNode(
+								message.body.getString("channel"),
+								message.body.getObject("data")
+								);
+	
+						isCreated = true;
+						
+						// OK 
+						sendOK(message);
+	
+					} catch (ZooKeeperConnectionException 
+							| InterruptedException
+							| KeeperException e) {
+						e.printStackTrace();
+	
+						// ERROR
+						sendError(message, e.getMessage());
+	
+					}
 				}
 
 			}else if(NODE_WATCHER.ACTION.START_WATCHING.equals(action)){
-				watching();
+
+				if(!isWatching){
+					watching();
+					isWatching = false;
+				}
 				sendOK(message);
 			}
 

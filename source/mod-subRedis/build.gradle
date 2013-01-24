@@ -21,7 +21,8 @@ dependencies {
 
   compile      "redis.clients:jedis:$jedisVersion"
   compile      "commons-lang:commons-lang:2.6"
-
+  
+  provided      fileTree(dir: '../../common/lib', include: '*.*')
   provided     "org.vert-x:vertx-core:$vertxVersion"
   provided     "org.vert-x:vertx-platform:$vertxVersion"
             
@@ -36,6 +37,12 @@ dependencies {
 sourceSets {
   main {
     compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+eclipse {
+  classpath {
+    plusConfigurations += configurations.provided 
   }
 }
 

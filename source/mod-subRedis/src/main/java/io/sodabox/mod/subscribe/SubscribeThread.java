@@ -1,5 +1,7 @@
 package io.sodabox.mod.subscribe;
 
+import io.sodabox.common.api.SOCKET_SERVER;
+
 import org.apache.commons.lang.StringUtils;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.json.JsonObject;
@@ -56,7 +58,7 @@ public class SubscribeThread implements Runnable {
 			public void onMessage(String channel, String message) {
 				LogUtils.DEBUG(log, "message (channel:%s)- %s", channel, message);
 				eb.send(replyAddress, 
-						new JsonObject(message).putString("action", channel+":onMessage")
+						new JsonObject(message).putString("action", SOCKET_SERVER.ACTION.MESSAGE)
 						);
 			}
 
@@ -65,7 +67,7 @@ public class SubscribeThread implements Runnable {
 
 				JsonObject json = new JsonObject()
 				.putString("channel", channel)
-				.putString("action", channel+":onSubscribe");
+				.putString("action"	, SOCKET_SERVER.ACTION.SUBSCRIBE);
 
 				eb.publish(replyAddress, json);
 			}
@@ -75,7 +77,7 @@ public class SubscribeThread implements Runnable {
 				
 				JsonObject json = new JsonObject()
 				.putString("channel", channel)
-				.putString("action", channel+":onUnsubscribe");
+				.putString("action"	, SOCKET_SERVER.ACTION.UNSUBSCRIBE);
 
 				eb.publish(replyAddress, json);
 			}

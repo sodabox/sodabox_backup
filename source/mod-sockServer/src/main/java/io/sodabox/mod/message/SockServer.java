@@ -1,5 +1,8 @@
 package io.sodabox.mod.message;
 
+import io.sodabox.common.api.SESSION_MANAGER;
+import io.sodabox.common.api.SOCKET_SERVER;
+
 import java.util.Set;
 
 import org.vertx.java.core.Handler;
@@ -18,11 +21,11 @@ public class SockServer extends AbstractModule {
 				String socketId = sock.writeHandlerID;
 
 				Session session = getSessionInfo(socketId);
-				
+
 				removeSocketId(session.REFER, socketId);
 
 				DEBUG(" ** OUT ** %s / %s ", session.REFER, session.USER);
-				
+
 				int cnt = getSocketsCount(session.REFER);
 				if(cnt > 0){
 
@@ -33,6 +36,14 @@ public class SockServer extends AbstractModule {
 
 					sendMessageToAll(session.REFER, json.encode());	
 				}
+
+				eb.send(SESSION_MANAGER.ADDRESS, 
+						new JsonObject()
+				.putString("action", SESSION_MANAGER.ACTION.UPDATE)
+				.putString("refer", session.REFER)
+				.putNumber("count", cnt)
+				.putString("channel", channel)
+						);
 
 				removeSessionInfo(socketId);
 
@@ -46,12 +57,11 @@ public class SockServer extends AbstractModule {
 
 				if( "JOIN".equals(reqJson.getString("action")) ){
 
-					
 					DEBUG("[[JOIN]] : %s",reqJson.encode());
-					
-					String refer 	= reqJson.getString("refer");
-					JsonObject user = reqJson.getObject("user", new JsonObject());
-					String socketId = sock.writeHandlerID;
+
+					String 		refer 		= reqJson.getString("refer");
+					JsonObject 	user 		= reqJson.getObject("user", new JsonObject());
+					String 		socketId 	= sock.writeHandlerID;
 
 					// add socketId for refer 
 					addSocketId(refer, socketId);
@@ -60,8 +70,15 @@ public class SockServer extends AbstractModule {
 					String userStr = user.encode();
 					addSessionInfo(socketId, refer, userStr);
 
-
 					Set<String> socks = getSocketIds(refer);
+
+					eb.send(SESSION_MANAGER.ADDRESS, 
+							new JsonObject()
+					.putString("action", SESSION_MANAGER.ACTION.UPDATE)
+					.putString("refer", refer)
+					.putNumber("count", socks.size())
+					.putString("channel", channel)
+							);
 
 					for(String target : socks){
 
@@ -97,24 +114,24 @@ public class SockServer extends AbstractModule {
 					String socketId = sock.writeHandlerID;
 
 					Session session = getSessionInfo(socketId);
-					
+
 					DEBUG(" ** LOGOUT.. ** %s / %s ", session.REFER, session.USER);
-					
+
 					int cnt = getSocketsCount(session.REFER);
-					
+
 					if(cnt > 0){
 
 						JsonObject json = new JsonObject();
-						json.putString("action", "LOGOUT");
-						json.putObject("user", new JsonObject(session.USER));
-						json.putNumber("count", cnt);
+						json.putString("action"	, "LOGOUT");
+						json.putObject("user"	, new JsonObject(session.USER));
+						json.putNumber("count"	, cnt);
 
 						sendMessageToAll(session.REFER, json.encode());	
 					}
-					
+
 					removeSocketId(session.REFER, socketId);
 					removeSessionInfo(socketId);
-					
+
 				}else{
 					sock.writeBuffer(data);
 				}
@@ -125,21 +142,19 @@ public class SockServer extends AbstractModule {
 
 	@Override
 	protected Handler<Message<JsonObject>> getMessageHandler(){
-		
+
 		return new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> message) {
 
 				String action 	= message.body.getString("action");
 				String socketId = message.body.getString("socketId");
 
-				String action_message = channel+":onMessage";
-				
-				if(action_message.equals(action)){
+				if(SOCKET_SERVER.ACTION.MESSAGE.equals(action)){
+
 					message.body.putString("action", "LOGIN");
 					sendMessage(socketId, message.body.encode());
+
 				}
-				
-				//message.reply(new JsonObject().putString("reply", "ok"));
 			}
 
 		};

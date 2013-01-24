@@ -21,7 +21,7 @@ public class Module {
 	public Module(JsonObject obj){
 		this.moduleName = obj.getString("module");
 		this.moduleConfig = obj.getObject("config");
-		this.instances = obj.getInteger("instances");
+		this.instances = obj.getInteger("instances")==null?1:obj.getInteger("instances");
 	}
 
 	public String getModuleName() {

@@ -1,6 +1,7 @@
 package io.sodabox.mod.message;
 
 import io.sodabox.common.api.NODE_WATCHER;
+import io.sodabox.common.api.SOCKET_SERVER;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -37,25 +38,28 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 		log = container.getLogger();
 		sessionStore = vertx.sharedData().getMap("_REFER_STORAGE");
 
+		address = getOptionalStringConfig(SOCKET_SERVER.ADDRESS, SOCKET_SERVER.DEFAULT.ADDRESS);
 		channel = getMandatoryStringConfig("channel");
-		address = getMandatoryStringConfig("address");
 
 		HttpServer server = vertx.createHttpServer();
 
 		server.requestHandler(new Handler<HttpServerRequest>() {
 			public void handle(HttpServerRequest req) {
-				System.out.println(">>>>>>>>>>>>>>>>> request path  - "+req.path);
 				
 				if (!req.path.startsWith("/message")){
+					System.out.println(" *** bad request path *** "+req.path);
 					req.response.statusCode = 404;
 					req.response.end();
 				}
 			}
 		});
 
+		String 	host = getOptionalStringConfig(	SOCKET_SERVER.HOST, SOCKET_SERVER.DEFAULT.HOST);
+		int		port = getOptionalIntConfig(	SOCKET_SERVER.PORT, SOCKET_SERVER.DEFAULT.PORT);
+		
 		SockJSServer sockServer = vertx.createSockJSServer(server);
 		sockServer.installApp(new JsonObject().putString("prefix", "/message"), this);
-		server.listen(getOptionalIntConfig("port", 80), getOptionalStringConfig("host", "0.0.0.0"));
+		server.listen(port, host);
 
 		// create server node!!
 		JsonObject createNodeAction = new JsonObject();
@@ -63,18 +67,17 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 		createNodeAction.putString("channel", channel);
 		createNodeAction.putObject("data", 
 				new JsonObject().putString("channel", channel)
-				.putString("host", getOptionalStringConfig("host", "0.0.0.0"))
-				.putNumber("port", getOptionalIntConfig("port", 80))
+				.putString("host", host)
+				.putNumber("port", port)
 				);
 		eb.send(NODE_WATCHER.ADDRESS, createNodeAction);
 		
+		// starting watching nodes !!!!
+		eb.send(NODE_WATCHER.ADDRESS, new JsonObject().putString("action", NODE_WATCHER.ACTION.START_WATCHING));
+		
 		eb.registerHandler(address, getMessageHandler());
 
-		DEBUG("Message Server(%s) is started [%s:%d]",
-				address,
-				getOptionalStringConfig("host", "0.0.0.0"), 
-				getOptionalIntConfig("port", 80)
-				);
+		DEBUG("Message Server(%s) is started [%s:%d]", address, host, port);
 	}
 
 	protected abstract Handler<Message<JsonObject>> getMessageHandler();
@@ -126,8 +129,6 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 		return vertx.sharedData().getSet(refer).size();
 	}
 
-
-
 	protected void sendMessage(String socketId, String message){
 		
 		DEBUG("SEND MESSAGE %s -> %s", socketId, message);
@@ -142,7 +143,6 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 		}
 	}
 
-
 	class Session {
 
 		public String REFER;
@@ -152,13 +152,7 @@ public abstract class AbstractModule extends BusModBase implements Handler<SockJ
 			REFER = data.substring(0, data.indexOf("^"));
 			USER  = data.substring(data.indexOf("^")+1);
 		}
-
-
-
 	}
-
-
-
 
 	protected void DEBUG(String message, Object... args ){
 		if(log != null) log.debug(String.format(message, args));

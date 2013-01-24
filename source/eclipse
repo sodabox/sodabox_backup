@@ -4,27 +4,27 @@ CUR_DIR="`pwd -P`"
 
 echo " >> mod-publishManager"
 cd ./mod-publishManager
-./mk clean sodabox
+./mk clean eclipse
 
 echo " >> mod-sessionManager"
 cd ../mod-sessionManager
-./mk clean sodabox
+./mk clean eclipse
 
 echo " >> mod-nodeWatcher"
 cd ../mod-nodeWatcher
-./mk clean sodabox
+./mk clean eclipse
 
 echo " >> mod-subRedis"
 cd ../mod-subRedis
-./mk clean sodabox
+./mk clean eclipse
 
 echo " >> mod-sockServer"
 cd ../mod-sockServer
-./mk clean sodabox
+./mk clean eclipse
 
 echo " >> mod-webServer"
 cd ../mod-webServer
-./mk clean sodabox
+./mk clean eclipse
 
 cd $CUR_DIR
 

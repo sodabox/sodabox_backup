@@ -1,5 +1,7 @@
 package io.sodabox.mod.http;
 
+import io.sodabox.common.api.NODE_WATCHER;
+import io.sodabox.common.api.WEB_SERVER;
 import io.sodabox.mod.http.oauth.SocialAuthConfig;
 import io.sodabox.mod.http.oauth.SocialAuthManager;
 
@@ -17,7 +19,8 @@ public abstract class AbstractModule extends BusModBase implements Handler<HttpS
 
 	private Logger 	log;
 
-	private String 	webRootPrefix;
+	private String address;
+	private String 	webRoot;
 	private String 	indexPage;
 	private boolean gzipFiles;
 
@@ -30,14 +33,18 @@ public abstract class AbstractModule extends BusModBase implements Handler<HttpS
 
 		log = container.getLogger();
 
-		gzipFiles = getOptionalBooleanConfig("gzipFiles", false);
-		webRootPrefix = getOptionalStringConfig("webRootPrefix", "webroot");
-		String index = getOptionalStringConfig("indexPage", "index.html");
-		indexPage = webRootPrefix + File.separator + index;
+		address 		= getOptionalStringConfig	(WEB_SERVER.ADDRESS, 	WEB_SERVER.DEFAULT.ADDRESS);
+		gzipFiles 		= getOptionalBooleanConfig	(WEB_SERVER.GZIP_FILES, WEB_SERVER.DEFAULT.GZIP_FILES);
+		webRoot 		= getOptionalStringConfig	(WEB_SERVER.WEB_ROOT, 	WEB_SERVER.DEFAULT.WEB_ROOT);
+		String index	= getOptionalStringConfig	(WEB_SERVER.INDEX_PAGE, WEB_SERVER.DEFAULT.INDEX_PAGE);
+		String host		= getOptionalStringConfig	(WEB_SERVER.HOST, 		WEB_SERVER.DEFAULT.HOST);
+		int	   port		= getOptionalIntConfig		(WEB_SERVER.PORT,		WEB_SERVER.DEFAULT.PORT);
+		
+		indexPage = webRoot + File.separator + index;
 
 		// set socialAuthManager
 		try {
-			
+
 			JsonObject oauthConf = getOptionalObjectConfig("oauth", null);
 			SocialAuthConfig socialAuthConfig = SocialAuthConfig.getDefault();
 			socialAuthConfig.load( oauthConf );
@@ -52,12 +59,12 @@ public abstract class AbstractModule extends BusModBase implements Handler<HttpS
 
 		HttpServer server = vertx.createHttpServer();
 		server.requestHandler(this);
-		server.listen(getOptionalIntConfig("port", 80), getOptionalStringConfig("host", "0.0.0.0"));
+		server.listen(port, host);
+		
+		// starting watching nodes !!!!
+		eb.send(NODE_WATCHER.ADDRESS, new JsonObject().putString("action", NODE_WATCHER.ACTION.START_WATCHING));
 
-		DEBUG("Web Server is started [%s:%d]", 
-				getOptionalStringConfig("host", "0.0.0.0"), 
-				getOptionalIntConfig("port", 80)
-				);
+		DEBUG("Web Server is started [%s:%d]", host, port);
 
 	}
 
@@ -67,7 +74,7 @@ public abstract class AbstractModule extends BusModBase implements Handler<HttpS
 		String acceptEncoding = req.headers().get("accept-encoding");
 		boolean acceptEncodingGzip = acceptEncoding == null ? false : acceptEncoding.contains("gzip");
 
-		String fileName = webRootPrefix + req.path;
+		String fileName = webRoot + req.path;
 
 		if (req.path.equals("/")) {
 			req.response.sendFile(indexPage);

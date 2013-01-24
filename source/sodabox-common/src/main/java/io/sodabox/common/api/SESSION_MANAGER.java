@@ -24,7 +24,7 @@ public interface SESSION_MANAGER {
 		 * where users login-outed, apply user count to session redis.
 		 * input : action, refer, count
 		 */
-		String OUT		= "out";
+		String UPDATE		= "update";
 		
 		/**
 		 * get access lists

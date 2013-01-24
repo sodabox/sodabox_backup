@@ -18,11 +18,11 @@ repositories {
 }
 
 dependencies {
+
   provided     "org.vert-x:vertx-core:$vertxVersion"
   provided     "org.vert-x:vertx-platform:$vertxVersion"
-  compile      "org.json:json:20090211"
-  compile      fileTree(dir: '../../common/lib', include: '*.*')
-            
+  provided      fileTree(dir: '../../common/lib', include: '*.*')
+    
   testCompile  "org.vert-x:vertx-lang-java:$vertxVersion"
   testCompile  "org.vert-x:vertx-lang-rhino:$vertxVersion"
   testCompile( "org.vert-x:vertx-testframework:$vertxVersion" ) {
@@ -34,6 +34,12 @@ dependencies {
 sourceSets {
   main {
     compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+eclipse {
+  classpath {
+    plusConfigurations += configurations.provided 
   }
 }
 

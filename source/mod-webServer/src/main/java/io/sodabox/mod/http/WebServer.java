@@ -1,5 +1,7 @@
 package io.sodabox.mod.http;
 
+import io.sodabox.common.api.PUBLISH_MANAGER;
+import io.sodabox.common.api.SESSION_MANAGER;
 import io.sodabox.mod.http.oauth.Profile;
 import io.sodabox.mod.http.oauth.strategy.RequestToken;
 import io.sodabox.mod.http.oauth.utils.AccessGrant;
@@ -16,6 +18,7 @@ import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.omg.CORBA.PUBLIC_MEMBER;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
@@ -23,15 +26,6 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 public class WebServer extends AbstractModule{
-
-	interface NODE_MANAGER {
-		String ADDRESS 	= "mod-nodeManager";
-
-		interface ACTION{
-			String GET_NODE 		= "server:node"; // refer, callback
-			String PUB_MESSAGE 		= "message:publish";
-		}
-	}
 
 	interface OAUTH_COOKIE {
 		String NAME 	= "SODABOX";
@@ -57,13 +51,13 @@ public class WebServer extends AbstractModule{
 		// server node 받아오기.
 		if("/node".equals(req.path)){
 
-			JsonObject reqJson = new JsonObject();
-			reqJson.putString("action"	, NODE_MANAGER.ACTION.GET_NODE);
-			reqJson.putString("refer"	, req.params().get("refer"));
-
 			if(!StringUtils.isEmpty(req.params().get("refer"))){
 
-				eb.send(NODE_MANAGER.ADDRESS, reqJson, new Handler<Message<JsonObject>>() {
+				JsonObject reqJson = new JsonObject();
+				reqJson.putString("action"	, SESSION_MANAGER.ACTION.IN);
+				reqJson.putString("refer"	, req.params().get("refer"));
+				
+				eb.send(SESSION_MANAGER.ADDRESS, reqJson, new Handler<Message<JsonObject>>() {
 					public void handle(Message<JsonObject> message) {
 
 						StringBuffer returnStr = new StringBuffer("");
@@ -182,14 +176,14 @@ public class WebServer extends AbstractModule{
 					// @ TODO more !!
 
 					JsonObject jsonMessage = new JsonObject();
-					jsonMessage.putString("action"		, NODE_MANAGER.ACTION.PUB_MESSAGE);
+					jsonMessage.putString("action"		, PUBLISH_MANAGER.ACTION.PUB);
 					jsonMessage.putString("type"		, "LOGIN");
 					jsonMessage.putString("channel"		, channel);
 					jsonMessage.putString("socketId"	, socketId);
 					jsonMessage.putString("refer"		, refer);
 					jsonMessage.putObject("user"		, profileJson);
 
-					eb.send(NODE_MANAGER.ADDRESS, jsonMessage);
+					eb.send(PUBLISH_MANAGER.ADDRESS, jsonMessage);
 
 
 					// Delete Cookies

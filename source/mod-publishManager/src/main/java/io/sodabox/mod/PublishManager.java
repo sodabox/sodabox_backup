@@ -35,8 +35,6 @@ public class PublishManager extends BusModBase implements Handler<Message<JsonOb
 			redisNodeManager = new RedisNodeManager();
 		}
 
-		eb.send(NODE_WATCHER.ADDRESS, new JsonObject().putString("action", NODE_WATCHER.ACTION.START_WATCHING));
-
 		isReady = true;
 
 		eb.registerHandler(address, this);
@@ -76,7 +74,15 @@ public class PublishManager extends BusModBase implements Handler<Message<JsonOb
 				redisNodeManager.destoryNode();
 
 			}else if(PUBLISH_MANAGER.ACTION.PUB.equals(action)){
-				redisNodeManager.messageHandle(message);
+
+				String channel = message.body.getString("channel");
+				RedisPoolNode redisNode = redisNodeManager.getNode(channel);
+				long result = redisNode.publish(channel, message.body.encode());
+
+				JsonObject json = new JsonObject();
+				json.putNumber("result", 	result);
+				
+				sendOK(message, json);
 			}
 
 		}else{

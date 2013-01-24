@@ -62,8 +62,6 @@ public class SessionManager extends BusModBase implements Handler<Message<JsonOb
 			this.redisPool = jedisPool;
 		}
 		
-		// starting watching nodes !!!!
-		eb.send(NODE_WATCHER.ADDRESS, new JsonObject().putString("action", NODE_WATCHER.ACTION.START_WATCHING));
 
 		eb.registerHandler(address, this);
 	}
@@ -161,7 +159,7 @@ public class SessionManager extends BusModBase implements Handler<Message<JsonOb
 
 				}
 
-			}else if(SESSION_MANAGER.ACTION.OUT.equals(action)){
+			}else if(SESSION_MANAGER.ACTION.UPDATE.equals(action)){
 
 				String refer = message.body.getString("refer");
 				int count = message.body.getInteger("count").intValue();
